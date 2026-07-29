@@ -1,0 +1,17 @@
+[
+  {
+    "scenario": "Healthy",
+    "workflow_name": "AI Support Chatbot",
+    "workflow_id": "WF-001",
+    "last_run": "2026-07-30 09:15",
+    "status": "SUCCESS",
+    "api_status": "ONLINE",
+    "records_processed": 185,
+    "response_time_ms": 320,
+    "error_message": "",
+    "environment": "Production",
+    "validation_results": [],
+    "validation_passed": true,
+    "health_score": 100
+  }
+]
