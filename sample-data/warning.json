@@ -1,0 +1,19 @@
+[
+  {
+    "scenario": "Warning",
+    "workflow_name": "AI Support Chatbot",
+    "workflow_id": "WF-001",
+    "last_run": "2026-07-30 09:15",
+    "status": "PARTIAL_SUCCESS",
+    "api_status": "ONLINE",
+    "records_processed": 152,
+    "response_time_ms": 740,
+    "error_message": "Some customer records skipped",
+    "environment": "Production",
+    "validation_results": [
+      "33 records missing optional phone numbers"
+    ],
+    "validation_passed": true,
+    "health_score": 82
+  }
+]
