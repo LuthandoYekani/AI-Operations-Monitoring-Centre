@@ -1,0 +1,468 @@
+{
+  "name": "AI Operations Monitoring Centre v1",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "c534321e-1d9c-4836-84c8-e2922af74c30",
+      "name": "Workflow Health Check"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b1434c72-1f3d-4ede-ba8b-3bb51703abe2",
+              "name": "scenario",
+              "value": "Critical",
+              "type": "string"
+            },
+            {
+              "id": "2725a9b1-6a83-4344-a1e5-1133aacd59e5",
+              "name": "workflow_name",
+              "value": "AI Support Chatbot",
+              "type": "string"
+            },
+            {
+              "id": "67d596c4-4742-4724-ac30-d08e2ada9eab",
+              "name": "workflow_id",
+              "value": "WF-001",
+              "type": "string"
+            },
+            {
+              "id": "7269fc75-568d-4eb1-9339-ca0a2e76f6c6",
+              "name": "last_run",
+              "value": "2026-07-30 09:15",
+              "type": "string"
+            },
+            {
+              "id": "bd2d6999-fdcf-4bf9-a8f5-f281f7590dbf",
+              "name": "status",
+              "value": "FAILED",
+              "type": "string"
+            },
+            {
+              "id": "79519954-1d6d-43f8-aae1-85dda0151c81",
+              "name": "api_status",
+              "value": "ONLINE",
+              "type": "string"
+            },
+            {
+              "id": "7f6c4cd1-2aea-4c82-8ee6-8b87c342b02f",
+              "name": "records_processed",
+              "value": 185,
+              "type": "number"
+            },
+            {
+              "id": "be35f31e-2689-452e-b5d0-b0d21522ff28",
+              "name": "response_time_ms",
+              "value": 840,
+              "type": "number"
+            },
+            {
+              "id": "c2e51a59-7d44-4392-839a-db67806a7d0f",
+              "name": "error_message",
+              "value": "Missing customer email",
+              "type": "string"
+            },
+            {
+              "id": "56ac3913-8bdf-4a5b-932c-36f9cb1ac019",
+              "name": "environment",
+              "value": "Production",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "29d0798a-6815-47bc-9b71-21516eb95b88",
+      "name": "Simulated Workflow Status"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\n\nlet validation = [];\nlet score = 100;\n\n// ---------- Scenario Simulation ----------\nswitch (data.scenario) {\n\n  case \"Healthy\":\n    data.api_status = \"ONLINE\";\n    data.records_processed = 185;\n    data.response_time_ms = 320;\n    data.error_message = \"\";\n    break;\n\n  case \"Warning\":\n    data.api_status = \"ONLINE\";\n    data.records_processed = 120;\n    data.response_time_ms = 1800;\n    data.error_message = \"High response time\";\n    score -= 25;\n    break;\n\n  case \"Critical\":\n    data.api_status = \"OFFLINE\";\n    data.records_processed = 0;\n    data.response_time_ms = 0;\n    data.error_message = \"API unavailable\";\n    score -= 60;\n    break;\n}\n\n// ---------- Validation ----------\n\nif (!data.workflow_name) {\n  validation.push(\"Missing workflow name\");\n  score -= 20;\n}\n\nif (!data.status) {\n  validation.push(\"Missing workflow status\");\n  score -= 20;\n}\n\nif (!data.last_run) {\n  validation.push(\"Missing last run\");\n  score -= 10;\n}\n\nif (data.api_status !== \"ONLINE\") {\n  validation.push(\"API Offline\");\n}\n\nreturn [{\n  json: {\n    ...data,\n    validation_results: validation,\n    validation_passed: validation.length === 0,\n    health_score: Math.max(score,0)\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "27bbf535-7821-4d1b-ba60-b23626990e27",
+      "name": "Data validation"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e4fb007d-6526-48fc-ad4b-3e45f7a23257",
+              "leftValue": "={{$json.health_score}}",
+              "rightValue": 90,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        624,
+        0
+      ],
+      "id": "665580de-3e7f-42e7-a8e6-7a346ba1a065",
+      "name": "Health Decision"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "220a3043-5254-42d0-a378-dcc5f6578fb1",
+              "name": "report_status",
+              "value": "Healthy",
+              "type": "string"
+            },
+            {
+              "id": "57dc5871-58d0-4552-a216-40885b0f34fa",
+              "name": "severity",
+              "value": "Low",
+              "type": "string"
+            },
+            {
+              "id": "ec8fba24-5402-48ea-bde9-cb24b42e6dab",
+              "name": "escalation",
+              "value": "No",
+              "type": "string"
+            },
+            {
+              "id": "3ad534b8-bb55-4324-a7bd-46e67f1dfbf3",
+              "name": "report_summary",
+              "value": "Workflow is operating normally. No action required.",
+              "type": "string"
+            },
+            {
+              "id": "5c5613cf-c87a-4d21-8392-6a8bad74d003",
+              "name": "next_check",
+              "value": "Continue scheduled monitoring",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        832,
+        -64
+      ],
+      "id": "c097ead7-da2d-44b1-9d73-fb21da363685",
+      "name": "Genarate Healthy Report"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7ceb35ac-2703-4b39-af67-f58abf6d18b2",
+              "name": "incident_id",
+              "value": "=INC-{{$now.toFormat('yyyyMMddHHmmss')}}",
+              "type": "string"
+            },
+            {
+              "id": "68dfb9bc-b3b4-47fe-b974-341f3c6b4c2e",
+              "name": "severity",
+              "value": "High",
+              "type": "string"
+            },
+            {
+              "id": "8f8b8265-9369-4217-ab46-0b2f71aa6c5f",
+              "name": "escalation",
+              "value": "Yes",
+              "type": "string"
+            },
+            {
+              "id": "da834460-c4b8-4b61-a7cb-4b2d6748de33",
+              "name": "assigned_team",
+              "value": "AI operations",
+              "type": "string"
+            },
+            {
+              "id": "30ef327f-b9c0-4943-bafa-f9bfc0b0ce09",
+              "name": "incident_status",
+              "value": "Open",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        832,
+        96
+      ],
+      "id": "c96245ff-9135-4748-bd47-7afdeea1a3b4",
+      "name": "Create Incident"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyse this workflow incident.\n\nIncident ID:\n{{ $json.incident_id }}\n\nWorkflow:\n{{ $json.workflow_name }}\n\nEnvironment:\n{{ $json.environment }}\n\nWorkflow Status:\n{{ $json.status }}\n\nHealth Score:\n{{ $json.health_score }}\n\nAPI Status:\n{{ $json.api_status }}\n\nRecords Processed:\n{{ $json.records_processed }}\n\nResponse Time:\n{{ $json.response_time_ms }}\n\nValidation Results:\n{{ JSON.stringify($json.validation_results) }}\n\nError Message:\n{{ $json.error_message }}\n\nSeverity:\n{{ $json.severity }}\n\nIMPORTANT\n\nReturn ONLY valid JSON.\n\nDo not use Markdown.\n\nDo not use headings.\n\nDo not explain anything.\n\nDo not wrap the JSON in ```.\n\nYour response must be valid JSON only.\n\nUse exactly this structure:\n\n{\n  \"overall_health\":\"\",\n  \"severity\":\"\",\n  \"root_cause\":\"\",\n  \"business_impact\":\"\",\n  \"immediate_actions\":[],\n  \"long_term_improvements\":[],\n  \"escalation_required\":\"\",\n  \"executive_summary\":\"\"\n}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a Senior AI Operations Engineer at a regional Internet Service Provider (ISP).\n\nYour role is to support internal AI tools, automation workflows, customer support systems and operational processes.\n\nFocus on practical operational issues such as:\n\n• Workflow failures\n• Invalid or missing input data\n• API connectivity\n• Automation execution failures\n• Customer support systems\n• Ticketing systems\n• Data validation\n• Network connectivity\n• Service availability\n• Logging\n• Monitoring\n• First-line troubleshooting\n\nAvoid recommendations involving Kubernetes, cloud infrastructure, pods or large-scale distributed AI platforms unless they are explicitly mentioned in the incident.\n\nProduce concise, practical operational reports suitable for a small to medium ISP."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1040,
+        96
+      ],
+      "id": "8cf3c35c-85f4-4abc-905d-65db74fde41d",
+      "name": "AI Operations Analyst"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        896,
+        240
+      ],
+      "id": "5c60ac2e-14eb-4f90-ac35-1aa5b9f54474",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "OIDOiCDnk10r7xza",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"overall_health\": \"Critical\",\n  \"severity\": \"High\",\n  \"root_cause\": \"Missing customer email caused the workflow to fail.\",\n  \"business_impact\": \"Customer requests cannot be processed until the issue is resolved.\",\n  \"immediate_actions\": [\n    \"Validate the input data.\",\n    \"Correct the missing customer email.\",\n    \"Re-run the workflow.\"\n  ],\n  \"long_term_improvements\": [\n    \"Implement mandatory input validation.\",\n    \"Add automated monitoring and alerts.\",\n    \"Improve error handling.\"\n  ],\n  \"escalation_required\": \"Yes\",\n  \"executive_summary\": \"The workflow failed due to invalid input data and requires immediate attention.\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1296,
+        240
+      ],
+      "id": "c6af5b50-bfa6-4555-b32c-4719e453f305",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "content": "Workflow Monitoring\n\nMonitors workflow execution.\nCollects operational metrics.\n",
+        "width": 192
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        144
+      ],
+      "id": "753c70fc-4b5f-4041-8147-678cab295cb2",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "Validation Layer\n\nValidates workflow data.\nCalculates health score.\n",
+        "width": 176
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        384,
+        144
+      ],
+      "id": "7dcdef08-b52f-47fb-a388-8b0ea4e7448c",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "Decision Engine\n\nRoutes workflows based on health status.\nHealthy vs Incident.\n",
+        "width": 208
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        576,
+        144
+      ],
+      "id": "5d2e640a-4483-45ae-9460-a11841526ea8",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "AI Incident Analysis\n\nAI performs root cause analysis.\nGenerates structured incident reports.",
+        "width": 192
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1056,
+        288
+      ],
+      "id": "628f694e-1a45-4ec2-8e9f-126a6a754b27",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "Structured Output\n\nConverts AI output into structured JSON",
+        "height": 112,
+        "width": 208
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1408,
+        224
+      ],
+      "id": "55c698d6-057c-40d2-9057-4d6f6fdeee65",
+      "name": "Sticky Note4"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Workflow Health Check": {
+      "main": [
+        [
+          {
+            "node": "Simulated Workflow Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simulated Workflow Status": {
+      "main": [
+        [
+          {
+            "node": "Data validation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data validation": {
+      "main": [
+        [
+          {
+            "node": "Health Decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Health Decision": {
+      "main": [
+        [
+          {
+            "node": "Genarate Healthy Report",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create Incident",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Incident": {
+      "main": [
+        [
+          {
+            "node": "AI Operations Analyst",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Operations Analyst",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Operations Analyst": {
+      "main": [
+        []
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Operations Analyst",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "721d2c99-15f0-417b-8a84-c2bfa1b18f5f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0e679fbaa00268ed4a8b60cc4a7f48d220ca69600f865323334e4b410fd3fa4d"
+  },
+  "nodeGroups": [],
+  "id": "kWdTDqiI7IukbjiM",
+  "tags": []
+}
