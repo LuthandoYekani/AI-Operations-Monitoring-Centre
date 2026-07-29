@@ -1,0 +1,20 @@
+[
+  {
+    "scenario": "Critical",
+    "workflow_name": "AI Support Chatbot",
+    "workflow_id": "WF-001",
+    "last_run": "2026-07-30 09:15",
+    "status": "FAILED",
+    "api_status": "ONLINE",
+    "records_processed": 0,
+    "response_time_ms": 840,
+    "error_message": "Missing customer email",
+    "environment": "Production",
+    "validation_results": [
+      "Required customer email field missing",
+      "Workflow execution halted"
+    ],
+    "validation_passed": false,
+    "health_score": 40
+  }
+]
